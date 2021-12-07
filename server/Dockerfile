@@ -1,4 +1,4 @@
-FROM node:17.2.0
+FROM node:17.0.1
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
