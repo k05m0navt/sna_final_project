@@ -1,20 +1,47 @@
-﻿
+
 # SNA Final project report
 **Using Docker-Compose to deploy your application with frontend and backend.**
 
 ## Team: 
 Daniil Gubaidullin, Amir Khuzin, Truong Nguyen, Kseniya Kudasheva
 
-## Github repo:
->https://github.com/k05m0navt/sna_final_project
+***
 
-## Goal: 
-Sometimes we are bored and feel like productive. However no ideas came to our mind. Our web-application is born to solve this problem. Randomly generate fun/useful/practical daily goals for users by just one click, we hope to fulfill your day with excitement and productivity.
+## Content
+1. [Description](#description)
+> * [Project description](#project-description)
+> * [App description](#app-description)
+2. [Dockerfile](#dockerfile)
+> * [Server side](#server-side)
+> * [Client side](#client-side)
+3. [docker-compose](#docker-compose)
+> * [Settings](#settings)
+> * [Build](#build)
+4. [Issues](#issues)
+5. [Installation](#installation)
 
-## Technology stack:
+***
+
+## Description 
+
+### Project description
+The goal of this project is to learn how to create Dockerfiles for different 
+run and environments, how to construct docker-compose to run project. 
+
+We will show how to deploy a project to the Docker container on
+the React and Node.js [web-application](https://github.com/k05m0navt/sna_final_project)
+
+
+## App description
+Sometimes we are bored and feel like productive. However no ideas came to our mind.
+Our web-application is born to solve this problem. You can randomly generate 
+fun/useful/practical daily goals by just one click. We hope when you will need it,
+the app will fulfill your day with excitement and productivity.
+
+#### **Technology stack:**
 Node js, Docker, Docker-compose, HTML, CSS
 
-## Architecture
+#### Architecture
 ![sequence diagram](https://lh3.googleusercontent.com/pw/AM-JKLUqzs80uPNj9-t2_ZsEYi7dSP_jgRuoTdfP2BeeCDSKRI727mLR26cY5rUnatVMGdJyZLDc8UiOXCMMbmGDPg-2kOps_R6QjP6_NXllUEJLhA4W49boRG7iyhgJk74zaqCzJLyj7lzcAhJHrH5i5ICB=w522-h383-no?authuser=0)
 Back-end: Generate activity to suggest user 
 > http://localhost:3001/api/find_new_activity
@@ -22,7 +49,109 @@ Back-end: Generate activity to suggest user
 Front-end: Interact with users, display generated activity
 > http://localhost:3000/
 
-## Deployment
+## Dockerfile
+A Dockerfile allows us to define an image by specifying all the commands we
+would type manually to create an image. Docker can then build images from a
+specified Dockerfile. These Dockerfiles can be put into version control and 
+the images distributed as a binary to keep track of both how the image is 
+constructed and also to keep pre-built images around.
+
+### Server side
+
+```Dockerfile
+FROM node:17.0.1
+WORKDIR /app
+COPY package.json ./
+COPY package-lock.json ./
+COPY ./ ./
+RUN npm i
+CMD ["npm", "start"]
+```
+Here is our Dockerfile for server side. Its base image is Node.js runtime environment.
+We specified version 17.0.1, because it is very stable and most web-applications are
+supports that version.
+Next, we created `/app` directory for the application code inside the image. 
+This will be the working directory for our application.
+Then we copy `package.json` and `package-lock.json` files, this will safe
+us from problems with `npm` (`npm` 4 or less will not generate previous files).
+After we copy initial code to Docker image by command 
+`COPY ./ ./`. 
+We run `npm i` command to install all dependencies.
+And in the last we use `node start.js` to start the app.
+
+
+### Client side
+
+```Dockerfile
+FROM node:17.0.1
+WORKDIR /app
+COPY package.json ./
+COPY package-lock.json ./
+COPY ./ ./
+RUN npm i
+CMD ["npm", "start"]
+```
+Here is the same logic that we discussed previouly for server side.
+
+## docker-compose
+
+### Settings
+This is the configuration file we used to tell Docker Compose how our 
+web-application is built.
+
+```
+version: "3"
+
+services:
+    backend:
+        build:
+            context: ./server
+            dockerfile: ./Dockerfile
+        ports:
+            - "3001:3001"
+    frontend:
+        build:
+            context: ./client
+            dockerfile: ./Dockerfile
+        ports:
+            - "3000:3000"
+```
+
+#### **services**
+We have two individual components (servers) that this docker-compose file will 
+be in charge of starting and connecting. As you see backend does not depend on 
+server side, therefore none of them has `depends_on` line.
+
+#### **build**
+In `build` we specified directory where Dockerfile is placed, this Dockerfile will
+be delivered to `docker build` when build is run.
+
+#### **ports**
+Services can expose ports to the host machine, allowing the host to access the
+services running on the container’s ports or route external connections to 
+the container’s ports. Here we have direct mapping `- "3001:3001"`.
+
+#### **frontend**
+For `frontend` service configuration kind of the same. Most configurations 
+are set in Dockerfile, for both frontend and backend, you can view this Dockerfiles
+in [Dockerfile](#dockerfile) section.
+
+### Build
+After all configurations you can run docker-compose.yml.
+
+You can use `docker-compose up -d` to start the services in the background.
+If you need to stop the services, you can use `docker-compose down`.
+If you need to rebuild the images, you can use `docker-compose build`.
+
+## Issues
+1. First problem occured when we ran Dockerfile for the server, because our initial configuration
+was not perfect, there was version conflict. We specified the newest version of node.js,
+this version by default has `openssl` module, however some errors were thrown. To solve this
+issue we specified older version, and added dop configurations to package.json on client side.
+
+2. After finishing first problem another one occured.
+
+## Installation
 
 1. Clone github:
 > git clone https://github.com/k05m0navt/sna_final_project
@@ -39,8 +168,6 @@ Here the default port for:
 | client      | 3000       |
 | server   | 3001        |
 
-## Difficulty faced:
-There's not so much difficulty during the development and deployment. However to further extend the project, a more efficient way of generating activity should be chosen.
 
 ## Conclusion:
 A simple web-application using technologies learnt from SNA course has solved a fairly simple problem.
