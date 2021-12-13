@@ -2,6 +2,8 @@
 # SNA Final project report
 **Using Docker-Compose to deploy your application with frontend and backend.**
 
+![demo](https://user-images.githubusercontent.com/43779110/145835065-605dde49-3d49-4adb-8620-8c554c602851.gif)
+
 ## Team: 
 Daniil Gubaidullin, Amir Khuzin, Truong Nguyen, Kseniya Kudasheva
 
